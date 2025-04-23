@@ -1,7 +1,8 @@
 from typing import List, Optional
 
 import torch
-from flashinfer import BatchPrefillWithPagedKVCacheWrapper, append_paged_kv_cache
+from flashinfer import BatchPrefillWithPagedKVCacheWrapper, append_paged_kv_cache, get_batch_indices_positions, \
+    get_seq_lens
 
 from sarathi.config import ModelConfig, ParallelConfig
 from sarathi.core.datatypes.sequence import SequenceMetadata
@@ -219,12 +220,20 @@ class FlashinferAttentionWrapper(BaseAttentionWrapper):
             value = value.contiguous().reshape(-1, self.num_kv_heads, self.head_dim)
 
         output = torch.empty_like(query)
+        page_size = kv_cache.shape[2]
+
+        batch_indices, positions = get_batch_indices_positions(
+            self.append_qo_indptr_tensor,
+            get_seq_lens(self.append_kv_page_indptr_tensor, self.append_kv_last_page_len_tensor, page_size),
+            key.shape[0],
+        )
 
         with self.get_timer(OperationMetrics.ATTN_KV_CACHE_SAVE, layer_id):
             append_paged_kv_cache(
                 key,
                 value,
-                self.append_qo_indptr_tensor,
+                batch_indices,
+                positions,
                 kv_cache,
                 self.append_kv_page_indices_tensor,
                 self.append_kv_page_indptr_tensor,

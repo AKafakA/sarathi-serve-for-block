@@ -1,12 +1,12 @@
 ninja  # For faster builds.
 psutil
-ray >= 2.5.1
+ray
 pandas  # Required for Ray data.
 pyarrow  # Required for Ray data.
 sentencepiece  # Required for LLaMA tokenizer.
 numpy
-torch == 2.3
-transformers >= 4.37.0  # Required for Mistral.
+torch == 2.6.0
+transformers  # Required for Mistral.
 matplotlib
 plotly_express
 seaborn
@@ -14,7 +14,8 @@ wandb
 kaleido
 ddsketch
 jupyterlab
-flashinfer >= 0.0.5
+triton==3.2.0
+flashinfer-python==0.2.5
 pillow
 tiktoken
 grpcio
